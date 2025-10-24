@@ -6,7 +6,7 @@ class LeaderboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pakistaniNames = [
-      'Ahmed Khan', 'Fatima Ali', 'Muhammad Hassan', 'Aisha Malik', 'Ali Raza',
+      'Jai Kumar', 'Fatima Ali', 'Muhammad Hassan', 'Aisha Malik', 'Ali Raza',
       'Zainab Sheikh', 'Omar Farooq', 'Hina Ahmed', 'Usman Khan', 'Sara Khan',
       'Bilal Ahmad', 'Maryam Ali', 'Tariq Hussain', 'Nida Sheikh', 'Hamza Khan',
       'Ayesha Malik', 'Saad Ali', 'Khadija Khan', 'Fahad Ahmed', 'Zara Sheikh'

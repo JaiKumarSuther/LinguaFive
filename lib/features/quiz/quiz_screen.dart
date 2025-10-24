@@ -17,7 +17,6 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _isLoading = true;
   String? _selectedAnswer;
   bool _showResult = false;
-  String? _selectedLanguage;
 
   @override
   void initState() {
@@ -29,7 +28,8 @@ class _QuizScreenState extends State<QuizScreen> {
     final language = await UserPreferences.getSelectedLanguage();
     final learnedWords = await UserPreferences.getLearnedWords();
     
-    if (learnedWords.isEmpty) {
+    // Check if user has learned all 5 words
+    if (learnedWords.length < 5) {
       setState(() {
         _isLoading = false;
         _isQuizComplete = true;
@@ -73,7 +73,6 @@ class _QuizScreenState extends State<QuizScreen> {
     
     setState(() {
       _questions = questions.take(10).toList();
-      _selectedLanguage = language;
       _isLoading = false;
     });
   }
@@ -162,25 +161,25 @@ class _QuizScreenState extends State<QuizScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                      color: Colors.orange.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.school_outlined,
+                      Icons.lock,
                       size: 64,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Colors.orange,
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'No Words Learned Yet',
+                    'Quiz Locked',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Learn some words first, then come back to test your knowledge!',
+                    'You need to learn all 5 words first before taking the quiz!',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -277,6 +276,30 @@ class _QuizScreenState extends State<QuizScreen> {
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Show learned words count
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.school, color: Colors.green, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$_score words learned!',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -467,7 +490,7 @@ class _QuizScreenState extends State<QuizScreen> {
       if (isCorrect) {
         backgroundColor = Colors.green.withOpacity(0.1);
         textColor = Colors.green;
-      } else if (isSelected && !isCorrect) {
+      } else if (!isCorrect) {
         backgroundColor = Colors.red.withOpacity(0.1);
         textColor = Colors.red;
       }
@@ -499,14 +522,46 @@ class _QuizScreenState extends State<QuizScreen> {
                 const Icon(Icons.check_circle, color: Colors.green),
               if (showResult && isSelected && !isCorrect)
                 const Icon(Icons.cancel, color: Colors.red),
+              if (showResult && !isCorrect && !isSelected)
+                const Icon(Icons.close, color: Colors.red),
               if (showResult && isCorrect) const SizedBox(width: 8),
               if (showResult && isSelected && !isCorrect) const SizedBox(width: 8),
+              if (showResult && !isCorrect && !isSelected) const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  option,
-                  style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    if (showResult && isCorrect)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '✓ Learned!',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    if (showResult && !isCorrect)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '✗ Wrong',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.red,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],

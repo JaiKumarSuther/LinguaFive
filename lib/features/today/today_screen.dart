@@ -162,8 +162,8 @@ class _TodayScreenState extends State<TodayScreen> {
                 ),
               ),
               
-              // Quiz Button
-              if (_learnedWords.isNotEmpty)
+              // Quiz Button - only show when all 5 words are learned
+              if (_learnedWords.length >= 5)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: SizedBox(
@@ -184,6 +184,33 @@ class _TodayScreenState extends State<TodayScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                    ),
+                  ),
+                )
+              else if (_learnedWords.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.lock, color: Colors.grey[600]),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Learn all 5 words to unlock quiz',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -223,7 +250,7 @@ class _TodayScreenState extends State<TodayScreen> {
             'word': word.word,
             'translation': word.translation,
             'pronunciation': word.pronunciation,
-            'examples': word.examples.map((e) => e.sentence).toList(),
+            'examples': word.examples,
           },
         ),
         child: Padding(

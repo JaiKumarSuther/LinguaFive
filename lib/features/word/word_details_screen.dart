@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/user_preferences.dart';
+import '../../data/language_data.dart';
 
 class WordDetailsScreen extends StatefulWidget {
   final String? word;
@@ -60,45 +61,32 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
           backgroundColor: _isLearned ? Colors.green : Colors.orange,
         ),
       );
+      
+      // If word was marked as learned, redirect to home screen
+      if (_isLearned) {
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (mounted) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/home',
+              (route) => false,
+            );
+          }
+        });
+      }
     }
   }
 
   String _getExampleTranslation(String example) {
-    // Simple translation mapping for common Spanish examples
-    final translations = {
-      'Hola, ¿cómo estás?': 'Hello, how are you?',
-      'Hola a todos.': 'Hello everyone.',
-      'Hola, buenos días.': 'Hello, good morning.',
-      'Muchas gracias': 'Thank you very much',
-      'Gracias por venir': 'Thank you for coming',
-      'Gracias de antemano': 'Thank you in advance',
-      'Adiós, nos vemos': 'Goodbye, see you later',
-      'Adiós, hasta luego': 'Goodbye, see you later',
-      'Adiós, que tengas buen día': 'Goodbye, have a good day',
-      'Por favor, ven aquí': 'Please, come here',
-      'Por favor, ayúdame': 'Please, help me',
-      'Por favor, siéntate': 'Please, sit down',
-      'Sí, claro': 'Yes, of course',
-      'Sí, por supuesto': 'Yes, of course',
-      'Sí, me gusta': 'Yes, I like it',
-      'No, gracias': 'No, thank you',
-      'No, no quiero': 'No, I don\'t want to',
-      'No, no puedo': 'No, I can\'t',
-      'Necesito agua': 'I need water',
-      'El agua está fría': 'The water is cold',
-      'Bebe agua': 'Drink water',
-      'La comida está rica': 'The food is delicious',
-      'Necesito comida': 'I need food',
-      '¿Dónde está la comida?': 'Where is the food?',
-      'Mi casa es grande': 'My house is big',
-      'Voy a casa': 'I\'m going home',
-      'La casa está limpia': 'The house is clean',
-      'Mi familia es grande': 'My family is big',
-      'Amo a mi familia': 'I love my family',
-      'La familia está reunida': 'The family is gathered',
-    };
-    
-    return translations[example] ?? 'Translation not available';
+    // Create a temporary WordData to use its translation method
+    final tempWord = WordData(
+      word: '',
+      translation: '',
+      pronunciation: '',
+      examples: [example],
+      difficulty: '',
+      tags: [],
+    );
+    return tempWord.getExampleTranslation(example);
   }
 
   @override
