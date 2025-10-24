@@ -1,18 +1,18 @@
-#ifndef FLUTTER_MY_APPLICATION_H_
-#define FLUTTER_MY_APPLICATION_H_
+#ifndef FLUTTER_word_buddyLICATION_H_
+#define FLUTTER_word_buddyLICATION_H_
 
 #include <gtk/gtk.h>
 
-G_DECLARE_FINAL_TYPE(MyApplication, my_application, MY, APPLICATION,
+G_DECLARE_FINAL_TYPE(MyApplication, word_buddylication, MY, APPLICATION,
                      GtkApplication)
 
 /**
- * my_application_new:
+ * word_buddylication_new:
  *
  * Creates a new Flutter-based application.
  *
  * Returns: a new #MyApplication.
  */
-MyApplication* my_application_new();
+MyApplication* word_buddylication_new();
 
-#endif  // FLUTTER_MY_APPLICATION_H_
+#endif  // FLUTTER_word_buddyLICATION_H_

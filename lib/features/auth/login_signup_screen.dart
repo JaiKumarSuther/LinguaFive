@@ -92,50 +92,60 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
           child: Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width > 600 ? 420 : double.infinity,
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width > 600 ? 24.0 : 16.0,
+                  ),
                   child: Card(
                     elevation: 8,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                      padding: EdgeInsets.all(
+                        MediaQuery.of(context).size.width > 600 ? 24.0 : 20.0,
+                      ),
                       child: Form(
                         key: _formKey,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // App Logo/Title
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                shape: BoxShape.circle,
+                              // App Logo/Title
+                              Container(
+                                padding: EdgeInsets.all(
+                                  MediaQuery.of(context).size.width > 600 ? 16 : 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Image.asset(
+                                  'assets/images/favicon.png',
+                                  width: MediaQuery.of(context).size.width > 600 ? 48 : 40,
+                                  height: MediaQuery.of(context).size.width > 600 ? 48 : 40,
+                                ),
                               ),
-                              child: Icon(
-                                Icons.language,
-                                size: 48,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 16 : 12),
                             Text(
                               'LinguaFive',
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
+                                fontSize: MediaQuery.of(context).size.width > 600 ? null : 24,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 8 : 6),
                             Text(
                               _isLogin ? 'Welcome back!' : 'Start your language journey',
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                fontSize: MediaQuery.of(context).size.width > 600 ? null : 16,
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 32 : 24),
                             
                             // Email Field
                             TextFormField(
@@ -153,7 +163,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ? 'Enter a valid email'
                                   : null,
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 16 : 12),
                             
                             // Password Field
                             TextFormField(
@@ -178,7 +188,7 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                             
                             // Language Selection (only for signup)
                             if (!_isLogin) ...[
-                              const SizedBox(height: 16),
+                              SizedBox(height: MediaQuery.of(context).size.width > 600 ? 16 : 12),
                               DropdownButtonFormField<String>(
                                 value: _selectedLanguage,
                                 decoration: InputDecoration(
@@ -207,12 +217,12 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                               ),
                             ],
                             
-                            const SizedBox(height: 24),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 24 : 20),
                             
                             // Submit Button
                             SizedBox(
                               width: double.infinity,
-                              height: 48,
+                              height: MediaQuery.of(context).size.width > 600 ? 48 : 44,
                               child: FilledButton(
                                 onPressed: _isLoading ? null : _submit,
                                 style: FilledButton.styleFrom(
@@ -221,19 +231,22 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                   ),
                                 ),
                                 child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                    ? SizedBox(
+                                        height: MediaQuery.of(context).size.width > 600 ? 20 : 18,
+                                        width: MediaQuery.of(context).size.width > 600 ? 20 : 18,
+                                        child: const CircularProgressIndicator(strokeWidth: 2),
                                       )
                                     : Text(
                                         _isLogin ? 'Login' : 'Create account',
-                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                        style: TextStyle(
+                                          fontSize: MediaQuery.of(context).size.width > 600 ? 16 : 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                               ),
                             ),
                             
-                            const SizedBox(height: 16),
+                            SizedBox(height: MediaQuery.of(context).size.width > 600 ? 16 : 12),
                             
                             // Toggle Mode Button
                             TextButton(

@@ -3,6 +3,7 @@ import 'routes.dart';
 import 'features/auth/login_signup_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/word/word_details_screen.dart';
+import 'features/learned/learned_words_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -32,6 +33,8 @@ class App extends StatelessWidget {
                 examples: (settings.arguments as Map?)?['examples'] as List<String>?,
               ),
             );
+          case AppRoutes.learnedWords:
+            return MaterialPageRoute(builder: (_) => const LearnedWordsScreen());
           default:
             return MaterialPageRoute(builder: (_) => const LoginSignupScreen());
         }

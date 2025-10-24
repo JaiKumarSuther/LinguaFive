@@ -1,4 +1,4 @@
-# my_app
+# WordBuddy
 
 A new Flutter project.
 

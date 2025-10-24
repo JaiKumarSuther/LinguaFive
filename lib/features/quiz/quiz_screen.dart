@@ -17,6 +17,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _isLoading = true;
   String? _selectedAnswer;
   bool _showResult = false;
+  final List<String> _correctlyAnsweredWords = [];
 
   @override
   void initState() {
@@ -50,12 +51,29 @@ class _QuizScreenState extends State<QuizScreen> {
         orElse: () => allWords.first,
       );
       
-      // Create 3 wrong options from other words
-      final wrongOptions = allWords
-          .where((w) => w.word != learnedWord)
-          .take(3)
-          .map((w) => w.translation)
-          .toList();
+      // Create 3 wrong options from other words with unique translations
+      final usedTranslations = <String>{wordData.translation};
+      final wrongOptions = <String>[];
+      
+      for (final word in allWords) {
+        if (word.word != learnedWord && 
+            !usedTranslations.contains(word.translation) && 
+            wrongOptions.length < 3) {
+          wrongOptions.add(word.translation);
+          usedTranslations.add(word.translation);
+        }
+      }
+      
+      // If we don't have enough unique options, add some generic ones
+      while (wrongOptions.length < 3) {
+        final genericOptions = ['Good', 'Bad', 'Big', 'Small', 'Fast', 'Slow', 'Hot', 'Cold'];
+        for (final option in genericOptions) {
+          if (!usedTranslations.contains(option) && wrongOptions.length < 3) {
+            wrongOptions.add(option);
+            usedTranslations.add(option);
+          }
+        }
+      }
       
       // Shuffle options
       final options = [wordData.translation, ...wrongOptions]..shuffle();
@@ -80,6 +98,16 @@ class _QuizScreenState extends State<QuizScreen> {
   void _selectAnswer(String answer) {
     setState(() {
       _selectedAnswer = answer;
+      _showResult = true;
+      
+      // Check if answer is correct and track it
+      final currentQuestion = _questions[_currentQuestionIndex];
+      if (answer == currentQuestion.correctAnswer) {
+        _score++;
+        if (!_correctlyAnsweredWords.contains(currentQuestion.word)) {
+          _correctlyAnsweredWords.add(currentQuestion.word);
+        }
+      }
     });
   }
 
@@ -88,13 +116,10 @@ class _QuizScreenState extends State<QuizScreen> {
     
     setState(() {
       _showResult = true;
-      if (_selectedAnswer == _questions[_currentQuestionIndex].correctAnswer) {
-        _score++;
-      }
     });
   }
 
-  void _nextQuestion() {
+  void _nextQuestion() async {
     if (_currentQuestionIndex < _questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
@@ -102,10 +127,20 @@ class _QuizScreenState extends State<QuizScreen> {
         _showResult = false;
       });
     } else {
+      // Quiz completed - save results
+      await _saveQuizResults();
       setState(() {
         _isQuizComplete = true;
       });
     }
+  }
+
+  Future<void> _saveQuizResults() async {
+    // Save this quiz session results
+    await UserPreferences.saveQuizSessionResults(_correctlyAnsweredWords);
+    
+    // Save daily progress
+    await UserPreferences.saveDailyProgress(_correctlyAnsweredWords);
   }
 
   void _restartQuiz() {
@@ -345,7 +380,9 @@ class _QuizScreenState extends State<QuizScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(
+              MediaQuery.of(context).size.width > 600 ? 20 : 16,
+            ),
             child: Column(
               children: [
                 // Progress bar

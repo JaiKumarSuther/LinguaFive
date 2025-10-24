@@ -108,7 +108,9 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(
+                  MediaQuery.of(context).size.width > 600 ? 20 : 16,
+                ),
                 child: Row(
                   children: [
                     IconButton(
@@ -132,7 +134,9 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
               // Content
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(
+                    MediaQuery.of(context).size.width > 600 ? 20.0 : 16.0,
+                  ),
                   child: Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(

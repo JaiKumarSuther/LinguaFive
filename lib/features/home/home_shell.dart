@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../today/today_screen.dart';
 import '../dashboard/dashboard_screen.dart';
-import '../leaderboard/leaderboard_screen.dart';
+import '../practice/practice_screen.dart';
 import '../settings/settings_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -17,7 +17,7 @@ class _HomeShellState extends State<HomeShell> {
   final List<Widget> _tabs = const [
     TodayScreen(),
     DashboardScreen(),
-    LeaderboardScreen(),
+    PracticeScreen(),
     SettingsScreen(),
   ];
 
@@ -31,7 +31,7 @@ class _HomeShellState extends State<HomeShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.today_outlined), selectedIcon: Icon(Icons.today), label: 'Today'),
           NavigationDestination(icon: Icon(Icons.insights_outlined), selectedIcon: Icon(Icons.insights), label: 'Progress'),
-          NavigationDestination(icon: Icon(Icons.emoji_events_outlined), selectedIcon: Icon(Icons.emoji_events), label: 'Leaderboard'),
+          NavigationDestination(icon: Icon(Icons.school_outlined), selectedIcon: Icon(Icons.school), label: 'Practice'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),

@@ -48,9 +48,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _updateLanguage(String? newLanguage) async {
-    if (newLanguage != null) {
+    if (newLanguage != null && newLanguage != _selectedLanguage) {
+      // Clear all learning data when language changes
+      await UserPreferences.clearAllLearningData();
+      
       setState(() => _selectedLanguage = newLanguage);
       await UserPreferences.setSelectedLanguage(newLanguage);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Language changed! Learning progress has been reset.'),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -83,7 +100,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: SafeArea(
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(
+              MediaQuery.of(context).size.width > 600 ? 20 : 16,
+            ),
             children: [
               // Header
               Container(
