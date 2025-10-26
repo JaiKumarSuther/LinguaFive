@@ -411,11 +411,12 @@ class _QuizScreenState extends State<QuizScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                           // Word to translate
                           Container(
                             padding: const EdgeInsets.all(20),
@@ -507,6 +508,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ),
                 ),
+              ),
               ],
             ),
           ),
@@ -573,6 +575,8 @@ class _QuizScreenState extends State<QuizScreen> {
                       style: TextStyle(
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (showResult && isCorrect)
                       Padding(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../routes.dart';
 import '../../data/language_data.dart';
-import '../../services/user_preferences.dart';
+import '../../services/auth_service.dart';
 
 class LoginSignupScreen extends StatefulWidget {
   const LoginSignupScreen({super.key});
@@ -47,24 +47,44 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: hook to backend auth
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+      Map<String, dynamic> result;
       
-      // Save user preferences
-      await UserPreferences.setUserEmail(_emailController.text);
-      await UserPreferences.setLoggedIn(true);
-      
-      if (!_isLogin && _selectedLanguage != null) {
-        await UserPreferences.setSelectedLanguage(_selectedLanguage!);
+      if (_isLogin) {
+        // Login
+        result = await AuthService.login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      } else {
+        // Signup
+        result = await AuthService.signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          selectedLanguage: _selectedLanguage!,
+        );
       }
       
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        if (result['success']) {
+          // Success - navigate to home
+          Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message']),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -181,10 +201,49 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
                                 ),
                                 filled: true,
                               ),
-                              validator: (v) => (v == null || v.length < 6)
-                                  ? 'Min 6 characters'
-                                  : null,
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Password is required';
+                                }
+                                // Only validate on signup
+                                if (!_isLogin) {
+                                  return AuthService.validatePassword(v);
+                                }
+                                return null;
+                              },
                             ),
+                            
+                            // Password requirements (only for signup)
+                            if (!_isLogin) ...[
+                              SizedBox(height: MediaQuery.of(context).size.width > 600 ? 8 : 6),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Password must contain:',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    _buildPasswordRequirement('At least 8 characters'),
+                                    _buildPasswordRequirement('One uppercase letter (A-Z)'),
+                                    _buildPasswordRequirement('One lowercase letter (a-z)'),
+                                    _buildPasswordRequirement('One number (0-9)'),
+                                  ],
+                                ),
+                              ),
+                            ],
                             
                             // Language Selection (only for signup)
                             if (!_isLogin) ...[
@@ -279,6 +338,30 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRequirement(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Icon(
+            Icons.check_circle_outline,
+            size: 14,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

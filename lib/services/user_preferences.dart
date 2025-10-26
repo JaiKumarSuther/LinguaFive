@@ -1,257 +1,192 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user_model.dart';
+import 'auth_service.dart';
 
 class UserPreferences {
-  static const String _selectedLanguageKey = 'selected_language';
-  static const String _userEmailKey = 'user_email';
-  static const String _isLoggedInKey = 'is_logged_in';
-  static const String _dailyReminderKey = 'daily_reminder';
-  static const String _reminderTimeKey = 'reminder_time';
-  static const String _learnedWordsKey = 'learned_words';
-  static const String _quizVerifiedWordsKey = 'quiz_verified_words';
-  static const String _lastQuizSessionKey = 'last_quiz_session';
-  static const String _quizSessionResultsKey = 'quiz_session_results';
-  static const String _dailyProgressKey = 'daily_progress';
-  static const String _allLearnedWordsKey = 'all_learned_words';
+  // Get current user
+  static UserModel? _getCurrentUser() {
+    return AuthService.getCurrentUser();
+  }
 
+  // Language
   static Future<void> setSelectedLanguage(String languageCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_selectedLanguageKey, languageCode);
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.selectedLanguage = languageCode;
+      await AuthService.updateUser(user);
+    }
   }
 
   static Future<String?> getSelectedLanguage() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_selectedLanguageKey);
+    final user = _getCurrentUser();
+    return user?.selectedLanguage;
   }
 
-  static Future<void> setUserEmail(String email) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userEmailKey, email);
-  }
-
+  // User info
   static Future<String?> getUserEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_userEmailKey);
-  }
-
-  static Future<void> setLoggedIn(bool isLoggedIn) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isLoggedInKey, isLoggedIn);
+    final user = _getCurrentUser();
+    return user?.email;
   }
 
   static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isLoggedInKey) ?? false;
+    return AuthService.isLoggedIn();
   }
 
+  // Daily reminder
   static Future<void> setDailyReminder(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_dailyReminderKey, enabled);
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.dailyReminder = enabled;
+      await AuthService.updateUser(user);
+    }
   }
 
   static Future<bool> getDailyReminder() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_dailyReminderKey) ?? true;
+    final user = _getCurrentUser();
+    return user?.dailyReminder ?? true;
   }
 
   static Future<void> setReminderTime(String time) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_reminderTimeKey, time);
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.reminderTime = time;
+      await AuthService.updateUser(user);
+    }
   }
 
   static Future<String?> getReminderTime() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_reminderTimeKey);
+    final user = _getCurrentUser();
+    return user?.reminderTime;
   }
 
+  // Learned words (marked by user, not quiz-verified)
   static Future<void> addLearnedWord(String word) async {
-    final prefs = await SharedPreferences.getInstance();
-    final learnedWords = await getLearnedWords();
-    if (!learnedWords.contains(word)) {
-      learnedWords.add(word);
-      await prefs.setStringList(_learnedWordsKey, learnedWords);
+    final user = _getCurrentUser();
+    if (user != null && !user.learnedWords.contains(word)) {
+      user.learnedWords.add(word);
+      await AuthService.updateUser(user);
     }
   }
 
   static Future<List<String>> getLearnedWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_learnedWordsKey) ?? [];
+    final user = _getCurrentUser();
+    return user?.learnedWords ?? [];
   }
 
   static Future<bool> isWordLearned(String word) async {
-    final learnedWords = await getLearnedWords();
-    return learnedWords.contains(word);
+    final user = _getCurrentUser();
+    return user?.learnedWords.contains(word) ?? false;
   }
 
   static Future<void> removeLearnedWord(String word) async {
-    final prefs = await SharedPreferences.getInstance();
-    final learnedWords = await getLearnedWords();
-    learnedWords.remove(word);
-    await prefs.setStringList(_learnedWordsKey, learnedWords);
-  }
-
-  static Future<int> getLearnedWordsCount() async {
-    final learnedWords = await getLearnedWords();
-    return learnedWords.length;
-  }
-
-  static Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userEmailKey);
-    await prefs.remove(_isLoggedInKey);
-    await prefs.remove(_learnedWordsKey);
-    await prefs.remove(_quizVerifiedWordsKey);
-  }
-
-  // Quiz-verified words methods
-  static Future<void> addQuizVerifiedWord(String word) async {
-    final prefs = await SharedPreferences.getInstance();
-    final quizVerifiedWords = await getQuizVerifiedWords();
-    if (!quizVerifiedWords.contains(word)) {
-      quizVerifiedWords.add(word);
-      await prefs.setStringList(_quizVerifiedWordsKey, quizVerifiedWords);
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.learnedWords.remove(word);
+      await AuthService.updateUser(user);
     }
   }
 
+  static Future<int> getLearnedWordsCount() async {
+    final user = _getCurrentUser();
+    return user?.learnedWords.length ?? 0;
+  }
+
+  // Logout
+  static Future<void> logout() async {
+    await AuthService.logout();
+  }
+
+  // Quiz-verified words (words that passed quiz)
   static Future<List<String>> getQuizVerifiedWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_quizVerifiedWordsKey) ?? [];
+    // Quiz verified words are stored in allLearnedWords
+    return getAllLearnedWords();
   }
 
   static Future<bool> isWordQuizVerified(String word) async {
-    final quizVerifiedWords = await getQuizVerifiedWords();
-    return quizVerifiedWords.contains(word);
-  }
-
-  static Future<void> clearQuizVerifiedWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_quizVerifiedWordsKey);
-  }
-
-  static Future<int> getQuizVerifiedWordsCount() async {
-    final quizVerifiedWords = await getQuizVerifiedWords();
-    return quizVerifiedWords.length;
+    final user = _getCurrentUser();
+    return user?.allLearnedWords.contains(word) ?? false;
   }
 
   // Quiz session management
   static Future<void> saveQuizSessionResults(List<String> correctlyAnsweredWords) async {
-    final prefs = await SharedPreferences.getInstance();
-    final sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-    
-    // Save the session ID
-    await prefs.setString(_lastQuizSessionKey, sessionId);
-    
-    // Save the results for this session
-    await prefs.setStringList('${_quizSessionResultsKey}_$sessionId', correctlyAnsweredWords);
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.lastQuizResults = correctlyAnsweredWords;
+      await AuthService.updateUser(user);
+    }
   }
 
   static Future<List<String>> getLastQuizSessionResults() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastSessionId = prefs.getString(_lastQuizSessionKey);
-    
-    if (lastSessionId == null) {
-      return [];
-    }
-    
-    return prefs.getStringList('${_quizSessionResultsKey}_$lastSessionId') ?? [];
-  }
-
-  static Future<void> clearAllQuizSessions() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_lastQuizSessionKey);
-    await prefs.remove(_quizVerifiedWordsKey);
-    
-    // Clear all session result keys
-    final keys = prefs.getKeys();
-    for (String key in keys) {
-      if (key.startsWith(_quizSessionResultsKey)) {
-        await prefs.remove(key);
-      }
-    }
+    final user = _getCurrentUser();
+    return user?.lastQuizResults ?? [];
   }
 
   // Clear all learning data when language changes
   static Future<void> clearAllLearningData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_learnedWordsKey);
-    await prefs.remove(_quizVerifiedWordsKey);
-    await prefs.remove(_lastQuizSessionKey);
-    await prefs.remove(_dailyProgressKey);
-    await prefs.remove(_allLearnedWordsKey);
-    
-    // Clear all session result keys
-    final keys = prefs.getKeys();
-    for (String key in keys) {
-      if (key.startsWith(_quizSessionResultsKey)) {
-        await prefs.remove(key);
-      }
+    final user = _getCurrentUser();
+    if (user != null) {
+      user.learnedWords = [];
+      user.allLearnedWords = [];
+      user.lastQuizResults = [];
+      user.dailyProgress = {};
+      user.currentStreak = 0;
+      user.totalLearnedWords = 0;
+      await AuthService.updateUser(user);
     }
   }
 
   // Daily progress tracking
   static Future<void> saveDailyProgress(List<String> learnedWords) async {
-    final prefs = await SharedPreferences.getInstance();
-    final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD format
-    
-    // Get existing daily progress
-    final dailyProgress = await getDailyProgress();
-    dailyProgress[today] = learnedWords;
-    
-    // Save updated progress
-    final progressJson = dailyProgress.entries
-        .map((e) => '${e.key}:${e.value.join(',')}')
-        .join('|');
-    await prefs.setString(_dailyProgressKey, progressJson);
-    
-    // Update all learned words
-    await _updateAllLearnedWords();
+    final user = _getCurrentUser();
+    if (user != null) {
+      final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD format
+      
+      // Update daily progress
+      user.dailyProgress[today] = learnedWords;
+      
+      // Update all learned words with quiz-verified words
+      final allWords = <String>{};
+      for (final words in user.dailyProgress.values) {
+        if (words is List) {
+          allWords.addAll(words.cast<String>());
+        }
+      }
+      user.allLearnedWords = allWords.toList();
+      user.totalLearnedWords = allWords.length;
+      
+      // Update streak
+      user.currentStreak = await _calculateStreak(user.dailyProgress);
+      
+      await AuthService.updateUser(user);
+    }
   }
 
   static Future<Map<String, List<String>>> getDailyProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    final progressString = prefs.getString(_dailyProgressKey) ?? '';
-    
-    if (progressString.isEmpty) return {};
+    final user = _getCurrentUser();
+    if (user == null) return {};
     
     final Map<String, List<String>> progress = {};
-    final entries = progressString.split('|');
-    
-    for (final entry in entries) {
-      final parts = entry.split(':');
-      if (parts.length == 2) {
-        progress[parts[0]] = parts[1].isEmpty ? [] : parts[1].split(',');
+    user.dailyProgress.forEach((key, value) {
+      if (value is List) {
+        progress[key.toString()] = value.cast<String>();
       }
-    }
+    });
     
     return progress;
   }
 
   static Future<List<String>> getAllLearnedWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_allLearnedWordsKey) ?? [];
+    final user = _getCurrentUser();
+    return user?.allLearnedWords ?? [];
   }
 
   static Future<int> getTotalLearnedWordsCount() async {
-    final allLearned = await getAllLearnedWords();
-    return allLearned.length;
+    final user = _getCurrentUser();
+    return user?.totalLearnedWords ?? 0;
   }
 
   static Future<int> getCurrentStreak() async {
-    final progress = await getDailyProgress();
-    final today = DateTime.now();
-    int streak = 0;
-    
-    for (int i = 0; i < 365; i++) { // Check up to 1 year back
-      final date = today.subtract(Duration(days: i));
-      final dateString = date.toIso8601String().split('T')[0];
-      
-      if (progress.containsKey(dateString) && progress[dateString]!.isNotEmpty) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
+    final user = _getCurrentUser();
+    return user?.currentStreak ?? 0;
   }
 
   static Future<int> getWordsLearnedToday() async {
@@ -260,15 +195,27 @@ class UserPreferences {
     return progress[today]?.length ?? 0;
   }
 
-  static Future<void> _updateAllLearnedWords() async {
-    final prefs = await SharedPreferences.getInstance();
-    final progress = await getDailyProgress();
-    final allWords = <String>{};
+  // Helper to calculate streak
+  static Future<int> _calculateStreak(Map<dynamic, dynamic> dailyProgress) async {
+    final today = DateTime.now();
+    int streak = 0;
     
-    for (final words in progress.values) {
-      allWords.addAll(words);
+    for (int i = 0; i < 365; i++) { // Check up to 1 year back
+      final date = today.subtract(Duration(days: i));
+      final dateString = date.toIso8601String().split('T')[0];
+      
+      if (dailyProgress.containsKey(dateString)) {
+        final words = dailyProgress[dateString];
+        if (words is List && words.isNotEmpty) {
+          streak++;
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
     }
     
-    await prefs.setStringList(_allLearnedWordsKey, allWords.toList());
+    return streak;
   }
 }

@@ -346,3 +346,4 @@ class _LearnedWordsScreenState extends State<LearnedWordsScreen> {
     );
   }
 }
+

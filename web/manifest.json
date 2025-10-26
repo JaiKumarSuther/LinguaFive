@@ -1,11 +1,11 @@
 {
-    "name": "word_buddy",
-    "short_name": "word_buddy",
+    "name": "LinguaFive",
+    "short_name": "LinguaFive",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "LinguaFive - Learn languages with 5 words a day",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

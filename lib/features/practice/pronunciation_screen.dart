@@ -70,6 +70,8 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
         return 'it-IT';
       case 'japanese':
         return 'ja-JP';
+      case 'chinese':
+        return 'zh-CN';
       default:
         return 'en-US';
     }
@@ -256,13 +258,16 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  currentWord.word,
-                                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.primary,
+                                Flexible(
+                                  child: Text(
+                                    currentWord.word,
+                                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(width: 12),
                                 IconButton(
@@ -285,16 +290,19 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    currentWord.translation,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.primary,
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      currentWord.translation,
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ),
@@ -325,28 +333,31 @@ class _PronunciationScreenState extends State<PronunciationScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(color: Colors.green.withOpacity(0.3)),
                                 ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.volume_up,
-                                          size: 28,
-                                          color: Colors.green,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          currentWord.pronunciation,
-                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                            fontWeight: FontWeight.bold,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.volume_up,
+                                            size: 28,
                                             color: Colors.green,
-                                            fontStyle: FontStyle.italic,
                                           ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
+                                          const SizedBox(width: 8),
+                                          Flexible(
+                                            child: Text(
+                                              currentWord.pronunciation,
+                                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green,
+                                                fontStyle: FontStyle.italic,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
                                           onPressed: _isSpeaking ? null : _speakWord,
                                           icon: Icon(
                                             _isSpeaking ? Icons.volume_off : Icons.play_arrow,

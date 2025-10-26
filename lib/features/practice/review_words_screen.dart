@@ -170,6 +170,8 @@ class _ReviewWordsScreenState extends State<ReviewWordsScreen> {
                               color: Theme.of(context).colorScheme.primary,
                             ),
                             textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 16),
                           
@@ -208,6 +210,8 @@ class _ReviewWordsScreenState extends State<ReviewWordsScreen> {
                                       color: Colors.green,
                                     ),
                                     textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 16),
                                   

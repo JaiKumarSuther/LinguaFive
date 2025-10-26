@@ -82,13 +82,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(
-              MediaQuery.of(context).size.width > 600 ? 20 : 16,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(
+                MediaQuery.of(context).size.width > 600 ? 20 : 16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // Language header
                 if (languageData != null)
                   Card(
@@ -203,7 +204,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Expanded(
+                SizedBox(
+                  height: 300,
                   child: _totalWords == 0
                       ? Center(
                           child: Column(
@@ -275,8 +277,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ],
                         ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

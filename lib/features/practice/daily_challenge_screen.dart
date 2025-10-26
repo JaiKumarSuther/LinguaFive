@@ -66,10 +66,11 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
                 // Header
                 Card(
                   elevation: 2,
@@ -243,19 +244,18 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                 const SizedBox(height: 24),
                 
                 // Challenge actions
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Complete your daily challenge:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                Column(
+                  children: [
+                    Text(
+                      'Complete your daily challenge:',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // Action buttons
-                      SizedBox(
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Action buttons
+                    SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
                           onPressed: () {
@@ -311,9 +311,9 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
+                const SizedBox(height: 16),
                 
                 // Motivational message
                 if (isGoalReached)
@@ -340,7 +340,8 @@ class _DailyChallengeScreenState extends State<DailyChallengeScreen> {
                       ],
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

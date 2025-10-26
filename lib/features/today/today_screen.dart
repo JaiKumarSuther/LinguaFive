@@ -521,12 +521,15 @@ class _TodayScreenState extends State<TodayScreen> {
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         SizedBox(width: MediaQuery.of(context).size.width > 600 ? 4 : 3),
-                        Text(
-                          word.pronunciation,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: MediaQuery.of(context).size.width > 600 ? null : 12,
-                            fontStyle: FontStyle.italic,
+                        Flexible(
+                          child: Text(
+                            word.pronunciation,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              fontSize: MediaQuery.of(context).size.width > 600 ? null : 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

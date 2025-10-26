@@ -142,11 +142,12 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                           // Word
                           Center(
                             child: Container(
@@ -238,11 +239,12 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Expanded(
-                            child: ListView.separated(
-                              itemCount: (widget.examples ?? <String>[]).length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: (widget.examples ?? <String>[]).length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
                                 final example = widget.examples![index];
                                 return Container(
                                   padding: const EdgeInsets.all(12),
@@ -301,7 +303,6 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
                                 );
                               },
                             ),
-                          ),
                           
                           const SizedBox(height: 24),
                           
@@ -338,6 +339,7 @@ class _WordDetailsScreenState extends State<WordDetailsScreen> {
                   ),
                 ),
               ),
+            ),
             ],
           ),
         ),

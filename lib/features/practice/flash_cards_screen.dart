@@ -314,6 +314,8 @@ class _FlashCardsScreenState extends State<FlashCardsScreen> with TickerProvider
             color: Theme.of(context).colorScheme.primary,
           ),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
         Container(
@@ -359,6 +361,8 @@ class _FlashCardsScreenState extends State<FlashCardsScreen> with TickerProvider
             color: Colors.green,
           ),
           textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
         

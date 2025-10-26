@@ -17,6 +17,11 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
   final List<String> _foundWords = [];
   bool _isLoading = true;
   static const int gridSize = 10;
+  
+  // Selection state
+  List<List<int>> _selectedCells = [];
+  bool _isDragging = false;
+  final Map<String, List<List<int>>> _foundWordPositions = {};
 
   @override
   void initState() {
@@ -44,6 +49,8 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
     final shuffledWords = List<String>.from(_allWords)..shuffle();
     _wordsToFind = shuffledWords.take(6).toList();
     _foundWords.clear();
+    _foundWordPositions.clear();
+    _selectedCells.clear();
     
     // Create empty grid
     _grid = List.generate(gridSize, (_) => List.filled(gridSize, ''));
@@ -149,11 +156,58 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
   }
 
   void _onCellTap(int row, int col) {
-    // Simple tap to find words - in a real implementation, you'd have selection logic
     setState(() {
-      // For demo purposes, just mark as found when tapped
-      // In a real game, you'd implement proper word selection
+      _selectedCells = [[row, col]];
+      _isDragging = true;
     });
+  }
+
+  void _onCellDragUpdate(int row, int col) {
+    if (!_isDragging) return;
+    
+    setState(() {
+      // Only add if it's a valid continuation (same row, column, or diagonal)
+      if (_selectedCells.isNotEmpty) {
+        final lastCell = _selectedCells.last;
+        final rowDiff = (row - lastCell[0]).abs();
+        final colDiff = (col - lastCell[1]).abs();
+        
+        // Check if it's adjacent and in the same direction
+        if (rowDiff <= 1 && colDiff <= 1 && !_selectedCells.any((c) => c[0] == row && c[1] == col)) {
+          _selectedCells.add([row, col]);
+        }
+      }
+    });
+  }
+
+  void _onCellDragEnd() {
+    if (!_isDragging) return;
+    
+    setState(() {
+      _isDragging = false;
+      _checkSelectedWord();
+      _selectedCells.clear();
+    });
+  }
+
+  void _checkSelectedWord() {
+    if (_selectedCells.length < 2) return;
+    
+    // Get the selected word
+    final selectedWord = _selectedCells.map((cell) => _grid[cell[0]][cell[1]]).join();
+    final selectedWordReversed = selectedWord.split('').reversed.join();
+    
+    // Check if it matches any word to find
+    for (final word in _wordsToFind) {
+      if (!_foundWords.contains(word)) {
+        final wordUpper = word.toUpperCase();
+        if (selectedWord == wordUpper || selectedWordReversed == wordUpper) {
+          _markWordAsFound(word);
+          _foundWordPositions[word] = List.from(_selectedCells);
+          break;
+        }
+      }
+    }
   }
 
   void _markWordAsFound(String word) {
@@ -161,7 +215,75 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
       setState(() {
         _foundWords.add(word);
       });
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Found: $word! 🎉'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+      
+      // Check if all words are found
+      if (_foundWords.length == _wordsToFind.length) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _showCompletionDialog();
+        });
+      }
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('🎉 Congratulations!'),
+        content: const Text('You found all the words!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _generateWordSearch();
+              });
+            },
+            child: const Text('New Game'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isCellSelected(int row, int col) {
+    return _selectedCells.any((cell) => cell[0] == row && cell[1] == col);
+  }
+
+  bool _isCellFound(int row, int col) {
+    for (final positions in _foundWordPositions.values) {
+      if (positions.any((cell) => cell[0] == row && cell[1] == col)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  List<int>? _getCellFromPosition(Offset position) {
+    // Each cell is 28px + 2px margin = 30px total
+    const cellSize = 30.0;
+    
+    final col = (position.dx / cellSize).floor();
+    final row = (position.dy / cellSize).floor();
+    
+    // Validate the calculated position is within grid bounds
+    if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {
+      return [row, col];
+    }
+    return null;
   }
 
   @override
@@ -255,24 +377,39 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
                           children: _wordsToFind.map((word) {
                             final isFound = _foundWords.contains(word);
                             return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isFound 
                                     ? Colors.green.withOpacity(0.2)
                                     : Theme.of(context).colorScheme.surfaceVariant,
-                                borderRadius: BorderRadius.circular(6),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: isFound ? Colors.green : Colors.transparent,
+                                  width: isFound ? 2 : 1,
                                 ),
                               ),
-                              child: Text(
-                                word,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  decoration: isFound ? TextDecoration.lineThrough : null,
-                                  color: isFound ? Colors.green : null,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isFound)
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 4),
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        size: 14,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  Text(
+                                    word,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      decoration: isFound ? TextDecoration.lineThrough : null,
+                                      color: isFound ? Colors.green.shade700 : null,
+                                    ),
+                                  ),
+                                ],
                               ),
                             );
                           }).toList(),
@@ -294,22 +431,48 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: _grid.asMap().entries.map((rowEntry) {
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: rowEntry.value.asMap().entries.map((colEntry) {
-                                  return GestureDetector(
-                                    onTap: () => _onCellTap(rowEntry.key, colEntry.key),
-                                    child: Container(
+                          child: GestureDetector(
+                            onPanStart: (details) {
+                              final cell = _getCellFromPosition(details.localPosition);
+                              if (cell != null) {
+                                _onCellTap(cell[0], cell[1]);
+                              }
+                            },
+                            onPanUpdate: (details) {
+                              final cell = _getCellFromPosition(details.localPosition);
+                              if (cell != null) {
+                                _onCellDragUpdate(cell[0], cell[1]);
+                              }
+                            },
+                            onPanEnd: (_) => _onCellDragEnd(),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: _grid.asMap().entries.map((rowEntry) {
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: rowEntry.value.asMap().entries.map((colEntry) {
+                                    final row = rowEntry.key;
+                                    final col = colEntry.key;
+                                    final isSelected = _isCellSelected(row, col);
+                                    final isFound = _isCellFound(row, col);
+                                    
+                                    return Container(
                                       width: 28,
                                       height: 28,
                                       margin: const EdgeInsets.all(1),
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.surface,
+                                        color: isFound
+                                            ? Colors.green.withOpacity(0.3)
+                                            : isSelected
+                                                ? Colors.blue.withOpacity(0.3)
+                                                : Theme.of(context).colorScheme.surface,
                                         border: Border.all(
-                                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                          color: isFound
+                                              ? Colors.green
+                                              : isSelected
+                                                  ? Colors.blue
+                                                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                                          width: isFound || isSelected ? 2 : 1,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -318,14 +481,19 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
                                           colEntry.value,
                                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                             fontWeight: FontWeight.bold,
+                                            color: isFound
+                                                ? Colors.green.shade900
+                                                : isSelected
+                                                    ? Colors.blue.shade900
+                                                    : null,
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
-                              );
-                            }).toList(),
+                                    );
+                                  }).toList(),
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
                       ),
@@ -334,45 +502,30 @@ class _WordSearchScreenState extends State<WordSearchScreen> {
                 ),
                 const SizedBox(height: 12),
                 
-                // Demo buttons (in a real game, these would be replaced by proper selection logic)
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          if (_foundWords.length < _wordsToFind.length) {
-                            final nextWord = _wordsToFind.firstWhere(
-                              (word) => !_foundWords.contains(word),
-                              orElse: () => _wordsToFind.first,
-                            );
-                            _markWordAsFound(nextWord);
-                          }
-                        },
-                        icon: const Icon(Icons.search, size: 18),
-                        label: const Text('Find Next'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                // Instructions
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.touch_app, color: Colors.blue, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tap and drag to select letters and find words!',
+                          style: TextStyle(
+                            color: Colors.blue.shade900,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _generateWordSearch,
-                        icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text('New Game'),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 8),
               ],
