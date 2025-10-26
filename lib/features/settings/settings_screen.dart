@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../data/language_data.dart';
 import '../../services/user_preferences.dart';
+import '../../services/auth_service.dart';
+import '../../models/user_model.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,6 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _langOpen = false;
   bool _reminderOpen = false;
   bool _isLoading = true;
+  UserModel? _currentUser;
 
   @override
   void initState() {
@@ -27,8 +31,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final language = await UserPreferences.getSelectedLanguage();
     final reminderEnabled = await UserPreferences.getDailyReminder();
     final reminderTimeStr = await UserPreferences.getReminderTime();
+    final user = AuthService.getCurrentUser();
     
     setState(() {
+      _currentUser = user;
       _selectedLanguage = language;
       _reminderEnabled = reminderEnabled;
       if (reminderTimeStr != null) {
@@ -162,6 +168,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               
               const SizedBox(height: 20),
               
+              // User Profile Section
+              if (_currentUser != null)
+                _buildUserProfileCard(context, _currentUser!),
+              
+              if (_currentUser != null) const SizedBox(height: 16),
+              
               // Language Preference Section
               _buildSectionCard(
                 context,
@@ -273,6 +285,217 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUserProfileCard(BuildContext context, UserModel user) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final timeFormat = DateFormat('MMM dd, yyyy • hh:mm a');
+    
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primaryContainer,
+            Theme.of(context).colorScheme.secondaryContainer,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    size: 32,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Profile Information',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        user.email,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
+            Divider(color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.2)),
+            const SizedBox(height: 16),
+            
+            // User Stats Grid
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    Icons.local_fire_department,
+                    '${user.currentStreak}',
+                    'Day Streak',
+                    Colors.orange,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    Icons.checklist_rtl,
+                    '${user.totalLearnedWords}',
+                    'Words Learned',
+                    Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Account Details
+            _buildDetailRow(
+              context,
+              Icons.calendar_today,
+              'Joined',
+              dateFormat.format(user.createdAt),
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              context,
+              Icons.login,
+              'Last Login',
+              timeFormat.format(user.lastLoginAt),
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              context,
+              Icons.language,
+              'Learning Language',
+              LanguageRepository.getLanguage(user.selectedLanguage)?.name ?? user.selectedLanguage,
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              context,
+              Icons.badge,
+              'User ID',
+              user.id.substring(0, 8).toUpperCase(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildStatItem(BuildContext context, IconData icon, String value, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDetailRow(BuildContext context, IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.7),
+                ),
+              ),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -544,7 +544,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Authors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
+- **Jai Kumar** - *Initial work* - [YourGitHub](https://github.com/JaiKumarSuther)
 
 ## 🙏 Acknowledgments
 
@@ -556,8 +556,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📧 Contact
 
 For questions or feedback, please open an issue or contact:
-- Email: your.email@example.com
-- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: iamjaisuthar@gmail.com
+- GitHub: [@JaiKumarSuther](https://github.com/JaiKumarSuther)
 
 ---
 
