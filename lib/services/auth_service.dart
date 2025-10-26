@@ -3,15 +3,50 @@ import 'package:crypto/crypto.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/user_model.dart';
 
+/// Authentication service for user management and session handling.
+/// 
+/// This service provides:
+/// - User signup with email/password validation
+/// - Secure login with SHA-256 password hashing
+/// - Session management (current user tracking)
+/// - Password strength validation
+/// 
+/// All user data is stored locally using Hive NoSQL database.
+/// Passwords are never stored in plain text - only SHA-256 hashes are persisted.
+/// 
+/// Example usage:
+/// ```dart
+/// // Sign up a new user
+/// final success = await AuthService.signUp('user@example.com', 'SecurePass123');
+/// 
+/// // Log in existing user
+/// final loggedIn = await AuthService.login('user@example.com', 'SecurePass123');
+/// 
+/// // Check authentication status
+/// if (AuthService.isLoggedIn()) {
+///   final user = AuthService.getCurrentUser();
+/// }
+/// ```
 class AuthService {
+  // Hive box names for data persistence
   static const String _usersBoxName = 'users';
   static const String _currentUserKey = 'current_user_email';
   
-  // Get users box
+  /// Get the Hive box containing user data
   static Box<UserModel> get _usersBox => Hive.box<UserModel>(_usersBoxName);
+  
+  /// Get the Hive box containing app settings (including current user session)
   static Box get _settingsBox => Hive.box('settings');
 
-  // Password validation
+  /// Validates password against security requirements.
+  /// 
+  /// Security requirements (Constraint 4: Data Security):
+  /// - Minimum 8 characters length
+  /// - At least one uppercase letter (A-Z)
+  /// - At least one lowercase letter (a-z)
+  /// - At least one digit (0-9)
+  /// 
+  /// Returns error message if validation fails, null if password is valid.
   static String? validatePassword(String password) {
     if (password.isEmpty) {
       return 'Password is required';
@@ -31,7 +66,9 @@ class AuthService {
     return null; // Password is valid
   }
 
-  // Email validation
+  /// Validates email address format using RFC 5322 compliant regex.
+  /// 
+  /// Returns error message if validation fails, null if email is valid.
   static String? validateEmail(String email) {
     if (email.isEmpty) {
       return 'Email is required';
@@ -43,7 +80,12 @@ class AuthService {
     return null;
   }
 
-  // Hash password
+  /// Hashes password using SHA-256 cryptographic algorithm.
+  /// 
+  /// Converts password to UTF-8 bytes and applies SHA-256 hash function.
+  /// This ensures passwords are never stored in plain text (Security Best Practice).
+  /// 
+  /// Note: For production apps, consider using bcrypt or argon2 with salt.
   static String _hashPassword(String password) {
     final bytes = utf8.encode(password);
     final hash = sha256.convert(bytes);
